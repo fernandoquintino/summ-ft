@@ -6,7 +6,7 @@
 - Pinned: transformers 5.16.1, datasets 4.8.5, pytest 8.4.2 (Kaggle versions)
 
 ## 2026-10-24 — Data lengths
-- Dataset: `Samsung/samsum` no longer on Hub → using `knkarthick/samsum`
+- Dataset: `Samsung/samsum` no longer on Hub -> using `knkarthick/samsum`
   (14,731 train; official is 14,732)
 - Tokenizer: Qwen2.5-0.5B-Instruct
 - Dialogue tokens: mean 140.8, median 114, 95th 342, 99th 490, max 1049
