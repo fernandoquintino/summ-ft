@@ -13,3 +13,6 @@
 - Summary tokens: mean 25.8, median 23, 95th 54, 99th 67, max 86
 - Decision: keep all examples, cap 1,200, dynamic padding.
   Fallback: drop longest 1% of train if full fine-tune runs out of memory
+
+## 2026-10-27 - loss masking
+- Mask trailing `\n` at end of assistant summary so that model learns to stop at `<|im_end|>`.
