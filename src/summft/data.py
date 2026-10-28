@@ -23,11 +23,12 @@ def len_stats():
 SYSTEM_PROMPT = "Summarize this dialogue in one or two sentences."
 
 
-def build_messages(example, with_summary=True):
-    messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": example["dialogue"]},
-    ]
+def build_messages(example, with_summary=True, shots=()):
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+    for shot in shots:
+        messages.append({"role": "user", "content": shot["dialogue"]})
+        messages.append({"role": "assistant", "content": shot["summary"]})
+    messages.append({"role": "user", "content": example["dialogue"]})
     if with_summary:
         messages.append(
             {"role": "assistant", "content": example["summary"]}
