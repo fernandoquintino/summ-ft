@@ -26,7 +26,7 @@ SYSTEM_PROMPT = "Summarize this dialogue in one or two sentences."
 def build_messages(example, with_summary=True):
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": example["content"]},
+        {"role": "user", "content": example["dialogue"]},
     ]
     if with_summary:
         messages.append(
@@ -40,11 +40,12 @@ def tokenize_example(example, tokenizer):
         build_messages(example, with_summary=False),
         add_generation_prompt=True,
         tokenize=True,
-    )
+    )["input_ids"]
     full_ids = tokenizer.apply_chat_template(
         build_messages(example),
         tokenizer=True,
-    )
+    )["input_ids"]
     prompt_len = len(prompt_ids)
 
     labels = [-100] * prompt_len + full_ids[prompt_len:-1] + [-100]
+    return {"input_ids": full_ids, "labels": labels}
