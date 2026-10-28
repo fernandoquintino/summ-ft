@@ -18,3 +18,33 @@ def len_stats():
             f"\nmax = {np.max(lengths)}"
         )
     print(f"Number of samples: {len(train_dataset)}")
+
+
+SYSTEM_PROMPT = "Summarize this dialogue in one or two sentences."
+
+
+def build_messages(example, with_summary=True):
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": example["content"]},
+    ]
+    if with_summary:
+        messages.append(
+            {"role": "assistant", "content": example["summary"]}
+        )
+    return messages
+
+
+def tokenize_example(example, tokenizer):
+    prompt_ids = tokenizer.apply_chat_template(
+        build_messages(example, with_summary=False),
+        add_generation_prompt=True,
+        tokenize=True,
+    )
+    full_ids = tokenizer.apply_chat_template(
+        build_messages(example),
+        tokenizer=True,
+    )
+    prompt_len = len(prompt_ids)
+
+    labels = [-100] * prompt_len + full_ids[prompt_len:-1] + [-100]

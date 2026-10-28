@@ -16,3 +16,7 @@
 
 ## 2026-10-27 - loss masking
 - Mask trailing `\n` at end of assistant summary so that model learns to stop at `<|im_end|>`.
+
+## 2026-10-28 - system message
+- Change system content to "Summarize this dialogue in one or two sentences."
+
