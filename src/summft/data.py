@@ -43,7 +43,7 @@ def tokenize_example(example, tokenizer):
     )["input_ids"]
     full_ids = tokenizer.apply_chat_template(
         build_messages(example),
-        tokenizer=True,
+        tokenize=True,
     )["input_ids"]
     prompt_len = len(prompt_ids)
 
