@@ -49,3 +49,4 @@ def tokenize_example(example, tokenizer):
 
     labels = [-100] * prompt_len + full_ids[prompt_len:-1] + [-100]
     return {"input_ids": full_ids, "labels": labels}
+
