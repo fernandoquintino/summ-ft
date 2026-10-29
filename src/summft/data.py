@@ -41,17 +41,17 @@ def build_messages(example, with_summary=True, shots=()):
 
 def tokenize_example(example, tokenizer):
     """
-    Tokenizes one example for training with prompt (and trailing '\n')
+    Tokenizes one example for training with prompt (and trailing '\\n')
     out of the loss.
 
     Args:
-        example: dict with "dialogue" and "summary.
+        example: dict with "dialogue" and "summary".
         tokenizer: the Qwen tokenizer.
     Returns:
         dict:
             - input_ids: prompt and summary
             - labels: Has same length as input_ids. Labels are set to
-                -100 for the prompt and trailing '\n'. Only the summary
+                -100 for the prompt and trailing '\\n'. Only the summary
                 and <|im_end|> are graded.
     """
     prompt_ids = tokenizer.apply_chat_template(

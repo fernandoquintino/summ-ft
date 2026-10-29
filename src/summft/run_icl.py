@@ -50,10 +50,12 @@ def main():
     out_dir.mkdir(parents=True, exist_ok=True)
     with open(out_dir / "predictions.jsonl", "w") as f:
         for ex, pred in zip(examples, predictions):
-            f.write(json.dumps(
-                {"id": ex["id"], "reference": ex["summary"], "prediction": pred})
-                + "\n"
+            f.write(
+                json.dumps(
+                    {"id": ex["id"], "reference": ex["summary"], "prediction": pred}
                 )
+                + "\n"
+            )
     metrics = {
         "shots": args.shots,
         "split": args.split,
