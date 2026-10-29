@@ -41,7 +41,7 @@ def main():
 
     start = time.time()
     predictions = generate_summaries(examples, model, tokenizer, shots=shots)
-    minutes = (time.time - start) / 60
+    minutes = (time.time()- start) / 60
 
     references = examples["summary"]
     scores = rouge_scores(predictions, references)
