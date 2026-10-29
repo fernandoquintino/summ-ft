@@ -49,11 +49,11 @@ def main():
     out_dir = Path("results") / f"icl_{args.shots}shot_{args.split}"
     out_dir.mkdir(parents=True, exist_ok=True)
     with open(out_dir / "predictions.jsonl", "w") as f:
-        f.writelines(
-            json.dumps({"id": ex["id"], "reference": ex["summary"], "prediction": pred})
-            + "\n"
-            for ex, pred in zip(examples, predictions)
-        )
+        for ex, pred in zip(examples, predictions):
+            f.write(json.dumps(
+                {"id": ex["id"], "reference": ex["summary"], "prediction": pred})
+                + "\n"
+                )
     metrics = {
         "shots": args.shots,
         "split": args.split,
