@@ -41,7 +41,7 @@ def main():
 
     start = time.time()
     predictions = generate_summaries(examples, model, tokenizer, shots=shots)
-    minutes = (time.time()- start) / 60
+    minutes = (time.time() - start) / 60
 
     references = examples["summary"]
     scores = rouge_scores(predictions, references)
@@ -49,20 +49,22 @@ def main():
     out_dir = Path("results") / f"icl_{args.shots}shot_{args.split}"
     out_dir.mkdir(parents=True, exist_ok=True)
     with open(out_dir / "predictions.jsonl", "w") as f:
-        for ex, pred in zip(examples, predictions):
-            f.write(
-                json.dumps(
-                    {"id": ex["id"],
-                     "reference": ex["summary"],
-                     "prediction": pred}
-                )
-                + "\n"
-            )
-    metrics = {"shots": args.shots, "split": args.split, "n": len(examples),
-               "minutes": round(minutes,1), **scores}
+        f.writelines(
+            json.dumps({"id": ex["id"], "reference": ex["summary"], "prediction": pred})
+            + "\n"
+            for ex, pred in zip(examples, predictions)
+        )
+    metrics = {
+        "shots": args.shots,
+        "split": args.split,
+        "n": len(examples),
+        "minutes": round(minutes, 1),
+        **scores,
+    }
     with open(out_dir / "metrics.json", "w") as f:
         json.dump(metrics, f, indent=2)
     print(metrics)
+
 
 if __name__ == "__main__":
     main()

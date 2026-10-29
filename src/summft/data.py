@@ -1,6 +1,7 @@
+import numpy as np
 from datasets import load_dataset
 from transformers import AutoTokenizer
-import numpy as np
+
 
 def len_stats():
     dataset = load_dataset("knkarthick/samsum")
@@ -14,7 +15,7 @@ def len_stats():
             f"\nmean = {lengths.mean():.1f} "
             f"\nmedian = {np.median(lengths):.1f}"
             f"\n95th = {np.percentile(lengths, 95):.1f}"
-            f"\n99th = {np.percentile(lengths,99):.1f}"
+            f"\n99th = {np.percentile(lengths, 99):.1f}"
             f"\nmax = {np.max(lengths)}"
         )
     print(f"Number of samples: {len(train_dataset)}")
@@ -30,13 +31,25 @@ def build_messages(example, with_summary=True, shots=()):
         messages.append({"role": "assistant", "content": shot["summary"]})
     messages.append({"role": "user", "content": example["dialogue"]})
     if with_summary:
-        messages.append(
-            {"role": "assistant", "content": example["summary"]}
-        )
+        messages.append({"role": "assistant", "content": example["summary"]})
     return messages
 
 
 def tokenize_example(example, tokenizer):
+    """
+    Tokenizes one example for training with prompt (and trailing '\n')
+    out of the loss.
+
+    Args:
+        example: dict with "dialogue" and "summary.
+        tokenizer: the Qwen tokenizer.
+    Returns:
+        dict:
+            - input_ids: prompt and summary
+            - labels: Has same length as input_ids. Labels are set to
+                -100 for the prompt and trailing '\n'. Only the summary
+                and <|im_end|> are graded.
+    """
     prompt_ids = tokenizer.apply_chat_template(
         build_messages(example, with_summary=False),
         add_generation_prompt=True,
@@ -50,4 +63,3 @@ def tokenize_example(example, tokenizer):
 
     labels = [-100] * prompt_len + full_ids[prompt_len:-1] + [-100]
     return {"input_ids": full_ids, "labels": labels}
-

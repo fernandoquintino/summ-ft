@@ -12,8 +12,10 @@ def generate_summaries(examples, model, tokenizer, max_new_tokens=100, shots=())
             return_dict=True,
         )
         inputs = inputs.to(model.device)
-        output = model.generate(**inputs, max_new_tokens=max_new_tokens, do_sample=False)
-        new_tokens= output[0][inputs["input_ids"].shape[1]:]
+        output = model.generate(
+            **inputs, max_new_tokens=max_new_tokens, do_sample=False
+        )
+        new_tokens = output[0][inputs["input_ids"].shape[1] :]
         summary = tokenizer.decode(new_tokens, skip_special_tokens=True)
         summaries.append(summary)
     return summaries
