@@ -20,3 +20,18 @@
 ## 2026-10-28 - system message
 - Change system content to "Summarize this dialogue in one or two sentences."
 
+## 2026-10-29 - review of in context learning
+- In context learning on full validation set:
+```  shots  rouge1  rouge2  rougeL  minutes   n
+     0    33.8    10.0    25.2     18.4 818
+     1    35.0    11.4    27.7     10.9 818
+     3    38.4    13.2    29.7     15.9 818
+     5    38.9    13.8    29.8     18.0 818```
+- lengths of output:
+```  0 shots: pred len = 33.2 ref len = 20.3
+  1 shots: pred len = 18.5 ref len = 20.3
+  3 shots: pred len = 26.3 ref len = 20.3
+  5 shots: pred len = 29.3 ref len = 20.3```
+-reading a few examples showed that the difference was minimal, just reworded
+-Conclusion: few shots helped. 0 shots took longer probably because it had the longest output
+
