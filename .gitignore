@@ -226,3 +226,4 @@ mlartifacts/
 *.pt
 *.safetensors
 *.bin
+.DS_Store
