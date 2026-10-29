@@ -2,6 +2,7 @@ from summft.data import build_messages
 
 
 def generate_summaries(examples, model, tokenizer, max_new_tokens=100, shots=()):
+    """Greedy-decode one summary per example. Returns a list of strings."""
     summaries = []
     for example in examples:
         messages = build_messages(example, with_summary=False, shots=shots)

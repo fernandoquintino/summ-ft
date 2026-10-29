@@ -25,6 +25,10 @@ SYSTEM_PROMPT = "Summarize this dialogue in one or two sentences."
 
 
 def build_messages(example, with_summary=True, shots=()):
+    """
+    Builds a list of dict for system/user/assistant messages.
+    Optional: few-shots, summary.
+    """
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     for shot in shots:
         messages.append({"role": "user", "content": shot["dialogue"]})
