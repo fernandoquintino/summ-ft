@@ -18,6 +18,7 @@ def mmlu_correct(questions, model, tokenizer):
     the model predicts the highest. Returns correctness as a list of
     bools.
     """
+    model.eval()
     letter_ids = [tokenizer.encode(x, add_special_tokens=False)[0] for x in LETTERS]
     results = []
     for row in questions:
@@ -28,7 +29,6 @@ def mmlu_correct(questions, model, tokenizer):
             return_tensors="pt",
             return_dict=True,
         ).to(model.device)
-        model.eval()
         with torch.no_grad():
             logits = model(**inputs).logits
         # Pick logits of first token after prompt.

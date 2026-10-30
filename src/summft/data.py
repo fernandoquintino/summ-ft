@@ -5,6 +5,7 @@ from transformers import AutoTokenizer
 DATASET = "knkarthick/samsum"
 MODEL_NAME = "Qwen/Qwen2.5-0.5B-Instruct"
 
+
 def len_stats():
     dataset = load_dataset(DATASET)
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
@@ -73,11 +74,15 @@ def tokenize_example(example, tokenizer):
 
 MAX_LENGTH = 1200
 
+
 def build_train_dataset(tokenizer, split="train", limit=None):
+    """Tokenize SAMSum split with only `input_ids` and `labels`."""
     dataset = load_dataset(DATASET, split=split)
     if limit:
         dataset = dataset.select(range(limit))
-    tokenized = dataset.map(lambda ex: tokenize_example(ex, tokenizer), remove_columns=dataset.column_names)
+    tokenized = dataset.map(
+        lambda ex: tokenize_example(ex, tokenizer), remove_columns=dataset.column_names
+    )
 
     longest = max(len(ids) for ids in tokenized["input_ids"])
     if longest > MAX_LENGTH:

@@ -1,6 +1,11 @@
 from transformers import AutoTokenizer
 
-from summft.data import build_messages, tokenize_example, MAX_LENGTH, build_train_dataset
+from summft.data import (
+    build_messages,
+    tokenize_example,
+    MAX_LENGTH,
+    build_train_dataset,
+)
 
 MODEL_NAME = "Qwen/Qwen2.5-0.5B-Instruct"
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
