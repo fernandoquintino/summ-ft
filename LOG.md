@@ -35,3 +35,6 @@
 -reading a few examples showed that the difference was minimal, just reworded
 -Conclusion: few shots helped. 0 shots took longer probably because it had the longest output
 
+## 2026-10-30 - MMLU baseline
+- 1,000 fixed questions, Kaggle 2xT4 fp16:
+  41.1 % 0.7 min

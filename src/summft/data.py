@@ -2,10 +2,12 @@ import numpy as np
 from datasets import load_dataset
 from transformers import AutoTokenizer
 
+DATASET = "knkarthick/samsum"
+MODEL_NAME = "Qwen/Qwen2.5-0.5B-Instruct"
 
 def len_stats():
-    dataset = load_dataset("knkarthick/samsum")
-    tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-0.5B-Instruct")
+    dataset = load_dataset(DATASET)
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     train_dataset = dataset["train"]
     for col in ["dialogue", "summary"]:
         texts = [t or "" for t in train_dataset[col]]
@@ -67,3 +69,17 @@ def tokenize_example(example, tokenizer):
 
     labels = [-100] * prompt_len + full_ids[prompt_len:-1] + [-100]
     return {"input_ids": full_ids, "labels": labels}
+
+
+MAX_LENGTH = 1200
+
+def build_train_dataset(tokenizer, split="train", limit=None):
+    dataset = load_dataset(DATASET, split=split)
+    if limit:
+        dataset = dataset.select(range(limit))
+    tokenized = dataset.map(lambda ex: tokenize_example(ex, tokenizer), remove_columns=dataset.column_names)
+
+    longest = max(len(ids) for ids in tokenized["input_ids"])
+    if longest > MAX_LENGTH:
+        raise ValueError(f"Longest example has {longest} tokens; cap is {MAX_LENGTH}")
+    return tokenized
