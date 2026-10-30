@@ -13,6 +13,7 @@ from summft.mmlu import mmlu_correct
 BASE_MODEL = "Qwen/Qwen2.5-0.5B-Instruct"
 SEED = 83
 
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", default=BASE_MODEL)
@@ -39,8 +40,10 @@ def main():
     out_dir = Path("results") / f"mmlu_{args.name}_{args.n}questions"
     out_dir.mkdir(parents=True, exist_ok=True)
     with open(out_dir / "per_question.jsonl", "w") as f:
-        for i,q,c in zip(idx, questions, correct):
-            f.write(json.dumps({"index": i, "subject": q["subject"], "correct": c}) + "\n")
+        for i, q, c in zip(idx, questions, correct):
+            f.write(
+                json.dumps({"index": i, "subject": q["subject"], "correct": c}) + "\n"
+            )
 
     metrics = {
         "model": args.model,
@@ -53,6 +56,7 @@ def main():
     with open(out_dir / "metrics.json", "w") as f:
         json.dump(metrics, f, indent=2)
     print(metrics)
+
 
 if __name__ == "__main__":
     main()
