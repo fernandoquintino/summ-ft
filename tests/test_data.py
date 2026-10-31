@@ -5,6 +5,7 @@ from summft.data import (
     tokenize_example,
     MAX_LENGTH,
     build_train_dataset,
+    make_collator,
 )
 
 MODEL_NAME = "Qwen/Qwen2.5-0.5B-Instruct"
@@ -43,3 +44,15 @@ def test_build_train_dataset():
     ds = build_train_dataset(tokenizer, split="validation", limit=5)
     assert ds.column_names == ["input_ids", "labels"]
     assert all(len(r["input_ids"]) == len(r["labels"]) for r in ds)
+
+
+def test_make_collator_right():
+    collate = make_collator(pad_token_id=0)
+    batch = [
+        {"input_ids": [5, 6, 7, 8], "labels": [-100, -100, 7, 8]},
+        {"input_ids": [9, 10], "labels": [-100, 10]},
+    ]
+    batch = collate(batch)
+    assert batch["input_ids"].tolist() == [[5, 6, 7, 8], [9, 10, 0, 0]]
+    assert batch["labels"].tolist() == [[-100, -100, 7, 8], [-100, 10, -100, -100]]
+    assert batch["attention_mask"].tolist() == [[1, 1, 1, 1], [1, 1, 0, 0]]

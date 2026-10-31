@@ -1,6 +1,7 @@
 import numpy as np
 from datasets import load_dataset
 from transformers import AutoTokenizer
+import torch
 
 DATASET = "knkarthick/samsum"
 MODEL_NAME = "Qwen/Qwen2.5-0.5B-Instruct"
@@ -88,3 +89,20 @@ def build_train_dataset(tokenizer, split="train", limit=None):
     if longest > MAX_LENGTH:
         raise ValueError(f"Longest example has {longest} tokens; cap is {MAX_LENGTH}")
     return tokenized
+
+
+def make_collator(pad_token_id):
+    def collate(batch):
+        longest = max(len(r["input_ids"]) for r in batch)
+        input_ids, labels, attention_mask = [], [], []
+        for row in batch:
+            n_pad = longest - len(row["input_ids"])
+            input_ids.append(row["input_ids"] + [pad_token_id] * n_pad)
+            labels.append(row["labels"] + [-100] * n_pad)
+            attention_mask.append([1]*len(row["input_ids"]) + [0] * n_pad)
+        return {
+            "input_ids": torch.tensor(input_ids),
+            "labels": torch.tensor(labels),
+            "attention_mask": torch.tensor(attention_mask),
+        }
+    return collate
