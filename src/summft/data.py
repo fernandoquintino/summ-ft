@@ -92,6 +92,8 @@ def build_train_dataset(tokenizer, split="train", limit=None):
 
 
 def make_collator(pad_token_id):
+    """Returns collate function that pads batch."""
+
     def collate(batch):
         longest = max(len(r["input_ids"]) for r in batch)
         input_ids, labels, attention_mask = [], [], []
@@ -99,10 +101,11 @@ def make_collator(pad_token_id):
             n_pad = longest - len(row["input_ids"])
             input_ids.append(row["input_ids"] + [pad_token_id] * n_pad)
             labels.append(row["labels"] + [-100] * n_pad)
-            attention_mask.append([1]*len(row["input_ids"]) + [0] * n_pad)
+            attention_mask.append([1] * len(row["input_ids"]) + [0] * n_pad)
         return {
             "input_ids": torch.tensor(input_ids),
             "labels": torch.tensor(labels),
             "attention_mask": torch.tensor(attention_mask),
         }
+
     return collate
