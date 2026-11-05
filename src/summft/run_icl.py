@@ -21,6 +21,8 @@ def main():
     parser.add_argument("--shots", type=int, default=0)
     parser.add_argument("--split", default="validation")
     parser.add_argument("--limit", type=int, default=None)
+    parser.add_argument("--model", default=MODEL_NAME)
+    parser.add_argument("--name", default="base")
     args = parser.parse_args()
 
     dataset = load_dataset(DATASET_NAME)
@@ -36,7 +38,7 @@ def main():
     dtype = torch.float16 if device == "cuda" else torch.float32
 
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-    model = AutoModelForCausalLM.from_pretrained(MODEL_NAME, dtype=dtype).to(device)
+    model = AutoModelForCausalLM.from_pretrained(args.model, dtype=dtype).to(device)
     model.eval()
 
     start = time.time()
@@ -46,7 +48,7 @@ def main():
     references = examples["summary"]
     scores = rouge_scores(predictions, references)
 
-    out_dir = Path("results") / f"icl_{args.shots}shot_{args.split}"
+    out_dir = Path("results") / f"{args.name}_{args.shots}shot_{args.split}"
     out_dir.mkdir(parents=True, exist_ok=True)
     with open(out_dir / "predictions.jsonl", "w") as f:
         for ex, pred in zip(examples, predictions):
@@ -57,6 +59,7 @@ def main():
                 + "\n"
             )
     metrics = {
+        "model": args.model,
         "shots": args.shots,
         "split": args.split,
         "n": len(examples),

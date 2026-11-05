@@ -31,8 +31,6 @@ def main():
     alpha = args.alpha or 2 * args.rank
     on_gpu = torch.cuda.is_available()
 
-
-
     os.environ.setdefault("MLFLOW_TRACKING_URI", "sqlite:///mlruns.db")
     os.environ.setdefault("MLFLOW_EXPERIMENT_NAME", "summ-ft")
 
