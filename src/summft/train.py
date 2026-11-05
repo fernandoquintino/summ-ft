@@ -27,6 +27,7 @@ def main():
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--batch-size", type=int, default=2)
     args = parser.parse_args()
+    world_size = int(os.environ.get("WORLD_SIZE", 1))
     alpha = args.alpha or 2 * args.rank
     on_gpu = torch.cuda.is_available()
 
@@ -55,7 +56,7 @@ def main():
     training_args =  TrainingArguments(
         output_dir=str(out_dir),
         per_device_train_batch_size=args.batch_size,
-        gradient_accumulation_steps=16 // args.batch_size,
+        gradient_accumulation_steps=16 // (args.batch_size * world_size),
         learning_rate=args.lr,
         num_train_epochs=args.epochs,
         lr_scheduler_type="cosine",
@@ -76,6 +77,7 @@ def main():
         report_to="mlflow",
         run_name=out_dir.name,
         seed=SEED,
+        ddp_find_unused_parameters=False,
     )
 
     trainer = Trainer(
@@ -104,14 +106,16 @@ def main():
         "best_step": trainer.state.best_global_step,
         "minutes": round(minutes, 1),
         "peak_mem_gb": round(torch.cuda.max_memory_allocated() / 1e9, 2) if on_gpu else None,
-        "batch_size": args.batch_size
+        "batch_size": args.batch_size,
+        "world_size": world_size,
     }
 
-    with open(out_dir / "metrics.json", "w") as f:
-        json.dump(metrics, f, indent=2)
-    with open(out_dir/ "log_history.json", "w") as f:
-        json.dump(trainer.state.log_history, f, indent=2)
-    print(metrics)
+    if trainer.is_world_process_zero():
+        with open(out_dir / "metrics.json", "w") as f:
+            json.dump(metrics, f, indent=2)
+        with open(out_dir/ "log_history.json", "w") as f:
+            json.dump(trainer.state.log_history, f, indent=2)
+        print(metrics)
 
 if __name__ == "__main__":
     main()
