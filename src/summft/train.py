@@ -104,6 +104,7 @@ def main():
         "best_step": trainer.state.best_global_step,
         "minutes": round(minutes, 1),
         "peak_mem_gb": round(torch.cuda.max_memory_allocated() / 1e9, 2) if on_gpu else None,
+        "batch_size": args.batch_size
     }
 
     with open(out_dir / "metrics.json", "w") as f:
