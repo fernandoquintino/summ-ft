@@ -19,8 +19,8 @@ TARGETS = {
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--rank", type=int, default=16) # None -> 2 x rank
-    parser.add_argument("--alpha", type=int, default=None)
+    parser.add_argument("--rank", type=int, default=16)
+    parser.add_argument("--alpha", type=int, default=None) # None -> 2 x rank
     parser.add_argument("--targets", choices=["attn", "all"], default="all")
     parser.add_argument("--lr", type=float, default=2e-4)
     parser.add_argument("--epochs", type=float, default=1)
@@ -32,11 +32,11 @@ def main():
     os.environ.setdefault("MLFLOW_TRACKING_URI", "sqlite:///mlruns.db")
     os.environ.setdefault("MLFLOW_EXPERIMENT_NAME", "summ-ft")
 
-    tokenizer = AutoTokenizer(BASE_MODEL)
+    tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL)
     train_ds = build_train_dataset(tokenizer=tokenizer, split="train", limit=args.limit)
     val_ds = build_train_dataset(tokenizer=tokenizer, split="validation", limit=args.limit)
 
-    model = AutoModelForCausalLM(BASE_MODEL, dtype=torch.float32)
+    model = AutoModelForCausalLM.from_pretrained(BASE_MODEL, dtype=torch.float32)
 
     lora_config = LoraConfig(
         r=args.rank,
@@ -80,34 +80,34 @@ def main():
         args=training_args,
         train_dataset=train_ds,
         eval_dataset=val_ds,
-        data_collator=make_collator(tokenizer.pad_token),
+        data_collator=make_collator(tokenizer.pad_token_id),
     )
 
     if on_gpu:
         torch.cuda.reset_peak_memory_stats()
-        start = time.time()
-        result = trainer.train()
-        minutes = (time.time() - start) / 60
-        eval_loss = trainer.evaluate()["eval_loss"]
+    start = time.time()
+    result = trainer.train()
+    minutes = (time.time() - start) / 60
+    eval_loss = trainer.evaluate()["eval_loss"]
 
-        trainer.save_model(str(out_dir))
-        metrics = {
-            "method": "lora", "rank": args.rank, "alpha": alpha,
-            "targets": args.targets, "lr": args.lr,
-            "epochs": args.epochs, "n_train": len(train_ds),
-            "trainable_params": trainable,
-            "train_loss": round(result.train_loss, 4),
-            "eval_loss": round(eval_loss, 4),
-            "best_step": trainer.state.best_global_step,
-            "minutes": round(minutes, 1),
-            "peak_mem_gb": torch.cuda.reset_peak_memory_stats(),
-        }
+    trainer.save_model(str(out_dir))
+    metrics = {
+        "method": "lora", "rank": args.rank, "alpha": alpha,
+        "targets": args.targets, "lr": args.lr,
+        "epochs": args.epochs, "n_train": len(train_ds),
+        "trainable_params": trainable,
+        "train_loss": round(result.training_loss, 4),
+        "eval_loss": round(eval_loss, 4),
+        "best_step": trainer.state.best_global_step,
+        "minutes": round(minutes, 1),
+        "peak_mem_gb": round(torch.cuda.max_memory_allocated() / 1e9, 2) if on_GPU else None,
+    }
 
-        with open(out_dir / "metrics.json", "w") as f:
-            json.dump(metrics, f, indent=2)
-        with open(out_dir/ "log_history.json", "w") as f:
-            json.dump(trainer.state.log_history, f, indent=2)
-        print(metrics)
+    with open(out_dir / "metrics.json", "w") as f:
+        json.dump(metrics, f, indent=2)
+    with open(out_dir/ "log_history.json", "w") as f:
+        json.dump(trainer.state.log_history, f, indent=2)
+    print(metrics)
 
 if __name__ == "__main__":
     main()
