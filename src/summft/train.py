@@ -25,9 +25,12 @@ def main():
     parser.add_argument("--lr", type=float, default=2e-4)
     parser.add_argument("--epochs", type=float, default=1)
     parser.add_argument("--limit", type=int, default=None)
+    parser.add_argument("--batch-size", type=int, default=2)
     args = parser.parse_args()
     alpha = args.alpha or 2 * args.rank
     on_gpu = torch.cuda.is_available()
+
+
 
     os.environ.setdefault("MLFLOW_TRACKING_URI", "sqlite:///mlruns.db")
     os.environ.setdefault("MLFLOW_EXPERIMENT_NAME", "summ-ft")
@@ -51,8 +54,8 @@ def main():
     out_dir = Path("models") / f"lora_r{args.rank}_{args.targets}_epochs{args.epochs}"
     training_args =  TrainingArguments(
         output_dir=str(out_dir),
-        per_device_train_batch_size=4,
-        gradient_accumulation_steps=4,
+        per_device_train_batch_size=args.batch_size,
+        gradient_accumulation_steps=16 // args.batch_size,
         learning_rate=args.lr,
         num_train_epochs=args.epochs,
         lr_scheduler_type="cosine",
@@ -60,7 +63,7 @@ def main():
         logging_steps=20,
         eval_strategy="steps",
         eval_steps=100,
-        per_device_eval_batch_size=4,
+        per_device_eval_batch_size=args.batch_size,
         save_strategy="steps",
         save_steps=100,
         save_total_limit=2,
