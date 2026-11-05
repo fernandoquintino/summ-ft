@@ -56,7 +56,7 @@ def main():
         learning_rate=args.lr,
         num_train_epochs=args.epochs,
         lr_scheduler_type="cosine",
-        warmup_ratio=0.03,
+        warmup_steps=0.03,
         logging_steps=20,
         eval_strategy="steps",
         eval_steps=100,
@@ -68,7 +68,7 @@ def main():
         metric_for_best_model="eval_loss",
         greater_is_better=False,
         fp16=on_gpu,
-        group_by_length=True,
+        train_sampling_strategy="group_by_length",
         remove_unused_columns=False,
         report_to="mlflow",
         run_name=out_dir.name,
@@ -100,7 +100,7 @@ def main():
         "eval_loss": round(eval_loss, 4),
         "best_step": trainer.state.best_global_step,
         "minutes": round(minutes, 1),
-        "peak_mem_gb": round(torch.cuda.max_memory_allocated() / 1e9, 2) if on_GPU else None,
+        "peak_mem_gb": round(torch.cuda.max_memory_allocated() / 1e9, 2) if on_gpu else None,
     }
 
     with open(out_dir / "metrics.json", "w") as f:
