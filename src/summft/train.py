@@ -40,9 +40,6 @@ def main():
     alpha = args.alpha or 2 * args.rank
     on_gpu = torch.cuda.is_available()
 
-    if world_size > 1:
-        torch.distributed.destroy_process_group()
-
     os.environ.setdefault("MLFLOW_TRACKING_URI", "sqlite:///mlruns.db")
     os.environ.setdefault("MLFLOW_EXPERIMENT_NAME", "summ-ft")
 
@@ -134,6 +131,9 @@ def main():
         with open(out_dir / "log_history.json", "w") as f:
             json.dump(trainer.state.log_history, f, indent=2)
         print(metrics)
+
+    if world_size > 1:
+        torch.distributed.destroy_process_group()
 
 
 if __name__ == "__main__":
