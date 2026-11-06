@@ -35,10 +35,14 @@ def main():
     parser.add_argument("--epochs", type=float, default=1)
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--batch-size", type=int, default=2)
+    parser.add_argument("--method", choices=["lora", "full"], default="lora")
+    parser.add_argument("--grad-ckpt", action="store_true")
+    parser.add_argument("--lr", type=float, default=None)
     args = parser.parse_args()
     world_size = int(os.environ.get("WORLD_SIZE", 1))
     alpha = args.alpha or 2 * args.rank
     on_gpu = torch.cuda.is_available()
+    lr = args.lr or (2e-4 if args.method == "lora" else 2e-5)
 
     os.environ.setdefault("MLFLOW_TRACKING_URI", "sqlite:///mlruns.db")
     os.environ.setdefault("MLFLOW_EXPERIMENT_NAME", "summ-ft")
@@ -51,22 +55,28 @@ def main():
 
     model = AutoModelForCausalLM.from_pretrained(BASE_MODEL, dtype=torch.float32)
 
-    lora_config = LoraConfig(
-        r=args.rank,
-        lora_alpha=alpha,
-        target_modules=TARGETS[args.targets],
-        lora_dropout=0.05,
-        task_type="CAUSAL_LM",
-    )
-    model = get_peft_model(model, lora_config)
+    if args.method == "lora":
+        lora_config = LoraConfig(
+            r=args.rank,
+            lora_alpha=alpha,
+            target_modules=TARGETS[args.targets],
+            lora_dropout=0.05,
+            task_type="CAUSAL_LM",
+        )
+        model = get_peft_model(model, lora_config)
     trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
 
-    out_dir = Path("models") / f"lora_r{args.rank}_{args.targets}_epochs{args.epochs:g}"
+    if args.method == "lora":
+        run_name = f"lora_r{args.rank}_{args.targets}_epochs{args.epochs:g}"
+    else:
+        run_name = f"full_epochs{args.epochs:g}"
+    out_dir = Path("models") / run_name
+
     training_args = TrainingArguments(
         output_dir=str(out_dir),
         per_device_train_batch_size=args.batch_size,
         gradient_accumulation_steps=16 // (args.batch_size * world_size),
-        learning_rate=args.lr,
+        learning_rate=lr,
         num_train_epochs=args.epochs,
         lr_scheduler_type="cosine",
         warmup_steps=0.03,
@@ -87,6 +97,9 @@ def main():
         run_name=out_dir.name,
         seed=SEED,
         ddp_find_unused_parameters=False,
+        gradient_checkpointing=args.grad_ckpt,
+        gradient_checkpointing_kwargs={"user_reentrant": False},
+        save_only_model=True,
     )
 
     trainer = Trainer(
@@ -106,11 +119,11 @@ def main():
 
     trainer.save_model(str(out_dir))
     metrics = {
-        "method": "lora",
-        "rank": args.rank,
-        "alpha": alpha,
-        "targets": args.targets,
-        "lr": args.lr,
+        "method": "args.method",
+        "rank": args.rank if args.method == "lora" else None,
+        "alpha": alpha if args.method == "lora" else None,
+        "targets": args.targets if args.method == "lora" else None,
+        "lr": lr,
         "epochs": args.epochs,
         "n_train": len(train_ds),
         "trainable_params": trainable,
@@ -123,6 +136,8 @@ def main():
         else None,
         "batch_size": args.batch_size,
         "world_size": world_size,
+        "method": args.method,
+        "grad_ckpt": args.grad_ckpt
     }
 
     if trainer.is_world_process_zero():
