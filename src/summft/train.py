@@ -118,7 +118,7 @@ def main():
 
     trainer.save_model(str(out_dir))
     metrics = {
-        "method": "args.method",
+        "method": args.method,
         "rank": args.rank if args.method == "lora" else None,
         "alpha": alpha if args.method == "lora" else None,
         "targets": args.targets if args.method == "lora" else None,
