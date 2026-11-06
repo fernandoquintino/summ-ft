@@ -38,3 +38,13 @@
 ## 2026-10-30 - MMLU baseline
 - 1,000 fixed questions, Kaggle 2xT4 fp16:
   41.1 % 0.7 min
+
+## 2026-11-06 - LoRA results (validation, 1 epoch, alpha = 2r, all linear layers)
+```method  rouge1  rouge2  rougeL  mmlu  trainable_params  train_min  peak_mem_gb  eval_min
+   0-shot    33.8    10.0    25.2  41.1               NaN        NaN          NaN      18.4
+   1-shot    35.0    11.4    27.7  41.1               NaN        NaN          NaN      10.9
+   3-shot    38.4    13.2    29.7  41.1               NaN        NaN          NaN      15.9
+   5-shot    38.9    13.8    29.8  41.1               NaN        NaN          NaN      18.0
+ LoRA r=4    47.1    20.6    37.3  40.6         2199552.0       18.6        11.17      20.1
+LoRA r=16    47.2    21.3    37.6  41.8         8798208.0       17.9        11.25      19.9
+LoRA r=64    47.6    21.8    38.2  35.9        35192832.0       18.0        11.56      21.0```

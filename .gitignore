@@ -228,3 +228,4 @@ mlartifacts/
 *.bin
 .DS_Store
 models/
+lora-adapters/
