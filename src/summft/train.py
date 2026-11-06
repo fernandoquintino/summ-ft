@@ -31,7 +31,6 @@ def main():
     parser.add_argument("--rank", type=int, default=16)
     parser.add_argument("--alpha", type=int, default=None)  # None -> 2 x rank
     parser.add_argument("--targets", choices=["attn", "all"], default="all")
-    parser.add_argument("--lr", type=float, default=2e-4)
     parser.add_argument("--epochs", type=float, default=1)
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--batch-size", type=int, default=2)
@@ -98,7 +97,7 @@ def main():
         seed=SEED,
         ddp_find_unused_parameters=False,
         gradient_checkpointing=args.grad_ckpt,
-        gradient_checkpointing_kwargs={"user_reentrant": False},
+        gradient_checkpointing_kwargs={"use_reentrant": False},
         save_only_model=True,
     )
 
@@ -136,8 +135,7 @@ def main():
         else None,
         "batch_size": args.batch_size,
         "world_size": world_size,
-        "method": args.method,
-        "grad_ckpt": args.grad_ckpt
+        "grad_ckpt": args.grad_ckpt,
     }
 
     if trainer.is_world_process_zero():
