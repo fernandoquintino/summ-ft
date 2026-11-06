@@ -49,6 +49,8 @@ def main():
     scores = rouge_scores(predictions, references)
 
     out_dir = Path("results") / f"{args.name}_{args.shots}shot_{args.split}"
+    if args.limit:
+        out_dir = out_dir.with_name(out_dir.name + f"limit{args.limit}")
     out_dir.mkdir(parents=True, exist_ok=True)
     with open(out_dir / "predictions.jsonl", "w") as f:
         for ex, pred in zip(examples, predictions):

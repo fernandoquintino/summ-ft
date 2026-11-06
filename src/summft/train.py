@@ -14,13 +14,22 @@ BASE_MODEL = "Qwen/Qwen2.5-0.5B-Instruct"
 SEED = 83
 TARGETS = {
     "attn": ["q_proj", "k_proj", "v_proj", "o_proj"],
-    "all": ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
+    "all": [
+        "q_proj",
+        "k_proj",
+        "v_proj",
+        "o_proj",
+        "gate_proj",
+        "up_proj",
+        "down_proj",
+    ],
 }
+
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--rank", type=int, default=16)
-    parser.add_argument("--alpha", type=int, default=None) # None -> 2 x rank
+    parser.add_argument("--alpha", type=int, default=None)  # None -> 2 x rank
     parser.add_argument("--targets", choices=["attn", "all"], default="all")
     parser.add_argument("--lr", type=float, default=2e-4)
     parser.add_argument("--epochs", type=float, default=1)
@@ -31,12 +40,17 @@ def main():
     alpha = args.alpha or 2 * args.rank
     on_gpu = torch.cuda.is_available()
 
+    if world_size > 1:
+        torch.distributed.destroy_process_group()
+
     os.environ.setdefault("MLFLOW_TRACKING_URI", "sqlite:///mlruns.db")
     os.environ.setdefault("MLFLOW_EXPERIMENT_NAME", "summ-ft")
 
     tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL)
     train_ds = build_train_dataset(tokenizer=tokenizer, split="train", limit=args.limit)
-    val_ds = build_train_dataset(tokenizer=tokenizer, split="validation", limit=args.limit)
+    val_ds = build_train_dataset(
+        tokenizer=tokenizer, split="validation", limit=args.limit
+    )
 
     model = AutoModelForCausalLM.from_pretrained(BASE_MODEL, dtype=torch.float32)
 
@@ -50,8 +64,8 @@ def main():
     model = get_peft_model(model, lora_config)
     trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
 
-    out_dir = Path("models") / f"lora_r{args.rank}_{args.targets}_epochs{args.epochs}"
-    training_args =  TrainingArguments(
+    out_dir = Path("models") / f"lora_r{args.rank}_{args.targets}_epochs{args.epochs:g}"
+    training_args = TrainingArguments(
         output_dir=str(out_dir),
         per_device_train_batch_size=args.batch_size,
         gradient_accumulation_steps=16 // (args.batch_size * world_size),
@@ -95,15 +109,21 @@ def main():
 
     trainer.save_model(str(out_dir))
     metrics = {
-        "method": "lora", "rank": args.rank, "alpha": alpha,
-        "targets": args.targets, "lr": args.lr,
-        "epochs": args.epochs, "n_train": len(train_ds),
+        "method": "lora",
+        "rank": args.rank,
+        "alpha": alpha,
+        "targets": args.targets,
+        "lr": args.lr,
+        "epochs": args.epochs,
+        "n_train": len(train_ds),
         "trainable_params": trainable,
         "train_loss": round(result.training_loss, 4),
         "eval_loss": round(eval_loss, 4),
         "best_step": trainer.state.best_global_step,
         "minutes": round(minutes, 1),
-        "peak_mem_gb": round(torch.cuda.max_memory_allocated() / 1e9, 2) if on_gpu else None,
+        "peak_mem_gb": round(torch.cuda.max_memory_allocated() / 1e9, 2)
+        if on_gpu
+        else None,
         "batch_size": args.batch_size,
         "world_size": world_size,
     }
@@ -111,9 +131,10 @@ def main():
     if trainer.is_world_process_zero():
         with open(out_dir / "metrics.json", "w") as f:
             json.dump(metrics, f, indent=2)
-        with open(out_dir/ "log_history.json", "w") as f:
+        with open(out_dir / "log_history.json", "w") as f:
             json.dump(trainer.state.log_history, f, indent=2)
         print(metrics)
+
 
 if __name__ == "__main__":
     main()
