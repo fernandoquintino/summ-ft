@@ -8,3 +8,4 @@ rouge-score==0.1.2
 accelerate==1.14.0
 peft==0.20.0
 mlflow==3.17.2
+bitsandbytes==0.50.2; sys_platform == "linux"

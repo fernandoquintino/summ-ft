@@ -5,8 +5,14 @@ import time
 from pathlib import Path
 
 import torch
-from peft import LoraConfig, get_peft_model
-from transformers import AutoModelForCausalLM, AutoTokenizer, Trainer, TrainingArguments
+from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    Trainer,
+    TrainingArguments,
+    BitsAndBytesConfig,
+)
 
 from summft.data import build_train_dataset, make_collator
 
@@ -35,14 +41,14 @@ def main():
     parser.add_argument("--epochs", type=float, default=1)
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--batch-size", type=int, default=2)
-    parser.add_argument("--method", choices=["lora", "full"], default="lora")
+    parser.add_argument("--method", choices=["lora", "qlora", "full"], default="lora")
     parser.add_argument("--grad-ckpt", action="store_true")
     parser.add_argument("--lr", type=float, default=None)
     args = parser.parse_args()
     world_size = int(os.environ.get("WORLD_SIZE", 1))
     alpha = args.alpha or 2 * args.rank
     on_gpu = torch.cuda.is_available()
-    lr = args.lr or (2e-4 if args.method == "lora" else 2e-5)
+    lr = args.lr or (2e-5 if args.method == "full" else 2e-4)
 
     os.environ.setdefault("MLFLOW_TRACKING_URI", "sqlite:///mlruns.db")
     os.environ.setdefault("MLFLOW_EXPERIMENT_NAME", "summ-ft")
@@ -53,9 +59,26 @@ def main():
         tokenizer=tokenizer, split="validation", limit=args.limit
     )
 
-    model = AutoModelForCausalLM.from_pretrained(BASE_MODEL, dtype=torch.float32)
 
-    if args.method == "lora":
+
+    if args.method == "qlora":
+        bnb_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_use_double_quant=True,
+            bnb_4bit_compute_dtype=torch.float16,
+        )
+        local_rank = int(os.environ.get("LOCAL_RANK", 0))
+        model = AutoModelForCausalLM.from_pretrained(
+            BASE_MODEL,
+            quantization_config=bnb_config,
+            device_map={"": local_rank},
+            dtype=torch.float16,
+        )
+        model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=args.grad_ckpt)
+    else:
+        model = AutoModelForCausalLM.from_pretrained(BASE_MODEL, dtype=torch.float32)
+    if args.method in ("lora", "qlora"):
         lora_config = LoraConfig(
             r=args.rank,
             lora_alpha=alpha,
@@ -64,12 +87,15 @@ def main():
             task_type="CAUSAL_LM",
         )
         model = get_peft_model(model, lora_config)
+
     trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
 
-    if args.method == "lora":
-        run_name = f"lora_r{args.rank}_{args.targets}_epochs{args.epochs:g}"
-    else:
+    if args.method == "full":
         run_name = f"full_epochs{args.epochs:g}"
+    else:
+        run_name = f"{args.method}_r{args.rank}_{args.targets}_epochs{args.epochs:g}"
+
+
     out_dir = Path("models") / run_name
 
     training_args = TrainingArguments(
@@ -120,9 +146,9 @@ def main():
     trainer.save_model(str(out_dir))
     metrics = {
         "method": args.method,
-        "rank": args.rank if args.method == "lora" else None,
-        "alpha": alpha if args.method == "lora" else None,
-        "targets": args.targets if args.method == "lora" else None,
+        "rank": args.rank if args.method != "full" else None,
+        "alpha": alpha if args.method != "full" else None,
+        "targets": args.targets if args.method != "full" else None,
         "lr": lr,
         "epochs": args.epochs,
         "n_train": len(train_ds),
