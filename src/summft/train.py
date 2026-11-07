@@ -24,6 +24,7 @@ TARGETS = {
         "down_proj",
     ],
 }
+os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
 
 
 def main():
