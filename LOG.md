@@ -55,7 +55,7 @@ LoRA r=16    47.2    21.3    37.6  41.8           8798208       17.9        11.2
 LoRA r=64    47.6    21.8    38.2  35.9          35192832       18.0        11.56      21.0
 ```
 
-## 2026-11-07 Full fine tuning
+## 2026-11-07 - Full fine tuning
 ```
   method  rouge1  rouge2  rougeL  mmlu  trainable_params  train_min peak_mem_gb  eval_min  eval_loss
    0-shot    33.8    10.0    25.2  41.1              <NA>        NaN        None      18.4        NaN
@@ -71,3 +71,19 @@ LoRA r=64    47.6    21.8    38.2  35.9          35192832       18.0       11.56
 - Full FT ran out of memory at 920/921 (GPU 1). Used checkingpoint-900 as the final model (eval_loss: 1.312, learning_rate: 2.994e-08)
 - Peak memory not recorded. Crash showed it needed >14.5 GB (T4 limit)
 - Full FT's eval_loss is higher than LoRA r=16,64 but has better Rouge metrics. eval_loss and rouge don't equate exactly.
+
+## 2026-11-11 - QLoRA results
+```
+    method  rouge1  rouge2  rougeL  mmlu  trainable_params  train_min peak_mem_gb  eval_min eval_loss
+    0-shot    33.8    10.0    25.2  41.1              <NA>        NaN        None      18.4      None
+    1-shot    35.0    11.4    27.7  41.1              <NA>        NaN        None      10.9      None
+    3-shot    38.4    13.2    29.7  41.1              <NA>        NaN        None      15.9      None
+    5-shot    38.9    13.8    29.8  41.1              <NA>        NaN        None      18.0      None
+  LoRA r=4    47.1    20.6    37.3  40.6           2199552       18.6       11.17      20.1    1.3303
+ LoRA r=16    47.2    21.3    37.6  41.8           8798208       17.9       11.25      19.9    1.3091
+ LoRA r=64    47.6    21.8    38.2  35.9          35192832       18.0       11.56      21.0    1.2978
+QLoRA r=16    46.5    20.0    36.7  39.4           8798208       26.4        10.9      21.2    1.3277
+   Full FT    48.8    22.5    39.1  30.7         494032768       24.9       >14.5      11.0     1.312
+```
+- QLoRA r=16 vs Lora r=16: longer training for QLoRA (26.4 min vs 17.9 min); slightly worse Rouge1/2/L scores (46.5, 20.0, 36.7 vs 47.2, 21.3, 37.6); slightly worse mmlu (39.4 vs 41.8); the advantage of QLoRA should have been peak_mem_gb, but the advantage was small (10.9 GB vs 11.25).
+
