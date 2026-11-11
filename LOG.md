@@ -85,5 +85,5 @@ LoRA r=64    47.6    21.8    38.2  35.9          35192832       18.0       11.56
 QLoRA r=16    46.5    20.0    36.7  39.4           8798208       26.4        10.9      21.2    1.3277
    Full FT    48.8    22.5    39.1  30.7         494032768       24.9       >14.5      11.0     1.312
 ```
-- QLoRA r=16 vs Lora r=16: longer training for QLoRA (26.4 min vs 17.9 min); slightly worse Rouge1/2/L scores (46.5, 20.0, 36.7 vs 47.2, 21.3, 37.6); slightly worse mmlu (39.4 vs 41.8); the advantage of QLoRA should have been peak_mem_gb, but the advantage was small (10.9 GB vs 11.25).
+- QLoRA r=16 vs Lora r=16: longer training for QLoRA (26.4 min vs 17.9 min); slightly worse Rouge1/2/L scores (46.5, 20.0, 36.7 vs 47.2, 21.3, 37.6); slightly worse mmlu (39.4 vs 41.8); the advantage of QLoRA should have been peak_mem_gb, but the advantage was small (10.9 GB vs 11.25) probably due to the model's small .5B parameters.
 
