@@ -59,8 +59,6 @@ def main():
         tokenizer=tokenizer, split="validation", limit=args.limit
     )
 
-
-
     if args.method == "qlora":
         bnb_config = BitsAndBytesConfig(
             load_in_4bit=True,
@@ -75,7 +73,9 @@ def main():
             device_map={"": local_rank},
             dtype=torch.float16,
         )
-        model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=args.grad_ckpt)
+        model = prepare_model_for_kbit_training(
+            model, use_gradient_checkpointing=args.grad_ckpt
+        )
     else:
         model = AutoModelForCausalLM.from_pretrained(BASE_MODEL, dtype=torch.float32)
     if args.method in ("lora", "qlora"):
@@ -94,7 +94,6 @@ def main():
         run_name = f"full_epochs{args.epochs:g}"
     else:
         run_name = f"{args.method}_r{args.rank}_{args.targets}_epochs{args.epochs:g}"
-
 
     out_dir = Path("models") / run_name
 

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import torch
 from datasets import load_dataset
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoTokenizer
 
 from summft.generate import generate_summaries
 from summft.metrics import rouge_scores
@@ -36,12 +36,9 @@ def main():
     shots_idx = random.Random(SEED).sample(range(len(train)), args.shots)
     shots = train.select(shots_idx)
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    dtype = torch.float16 if device == "cuda" else torch.float32
-
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     model = load_model(args.model, args.quant)
-    model_mem_gb = round(model.get_memory_footprint()/1e9, 2)
+    model_mem_gb = round(model.get_memory_footprint() / 1e9, 2)
     if torch.cuda.is_available():
         torch.cuda.reset_peak_memory_stats()
 

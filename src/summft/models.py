@@ -6,6 +6,7 @@ from transformers import AutoModelForCausalLM, BitsAndBytesConfig
 
 BASE_MODEL = "Qwen/Qwen2.5-0.5B-Instruct"
 
+
 def load_model(model_path, quant="none"):
     """
     Loads a model for evaluation, optionally with its base quantized.
