@@ -6,7 +6,7 @@ from transformers import AutoModelForCausalLM, BitsAndBytesConfig
 
 BASE_MODEL = "Qwen/Qwen2.5-0.5B-Instruct"
 
-def load_model(model_path, quant="None"):
+def load_model(model_path, quant="none"):
     """
     Loads a model for evaluation, optionally with its base quantized.
 
@@ -30,13 +30,15 @@ def load_model(model_path, quant="None"):
     else:
         if quant == "8bit":
             bnb_config = BitsAndBytesConfig(load_in_8bit=True)
-        else:
+        elif quant == "4bit":
             bnb_config = BitsAndBytesConfig(
                 load_in_4bit=True,
                 bnb_4bit_quant_type="nf4",
                 bnb_4bit_use_double_quant=True,
                 bnb_4bit_compute_dtype=torch.float16,
             )
+        else:
+            raise ValueError(f"quant must be 'none', '8bit', or '4bit', got {quant!r}")
         model = AutoModelForCausalLM.from_pretrained(
             base_path,
             quantization_config=bnb_config,
