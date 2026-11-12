@@ -96,4 +96,8 @@ quant  model_mem_gb  peak_gen_gb  peak_mmlu_gb  rouge1  rouge2  rougeL  mmlu  ro
  ```
  - Quantization reduced the memory foot print and the peak memory allocated ont he gpu.
  - Scores stayed about the same.
- - The cost of quantization was time: no quant 21.9 rouge_m (1.2 mmlu_min) vs 8bit 59.1 rouge_min (1.2 mmlu_mmin) and 4bit 30.5 rouge_min (1.8 mmlu_min).
+ - The cost of quantization was time: no quant 21.9 rouge_m (1.2 mmlu_min) vs 8bit 59.1 rouge_min (3.3 mmlu_mmin) and 4bit 30.5 rouge_min (1.8 mmlu_min).
+
+ ## 2026-11-12 - Rouge on test set setup
+ - for each method, pick model with best Rouge1 on validation: 5-shot, LoRA r=64, QLoRA r=16, Full FT
+ - LoRA r=16 was added because it score is near best Rouge1 and did not decrease in mmlu score.
