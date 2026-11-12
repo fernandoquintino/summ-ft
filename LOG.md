@@ -87,3 +87,13 @@ QLoRA r=16    46.5    20.0    36.7  39.4           8798208       26.4        10.
 ```
 - QLoRA r=16 vs Lora r=16: longer training for QLoRA (26.4 min vs 17.9 min); slightly worse Rouge1/2/L scores (46.5, 20.0, 36.7 vs 47.2, 21.3, 37.6); slightly worse mmlu (39.4 vs 41.8); the advantage of QLoRA should have been peak_mem_gb, but the advantage was small (10.9 GB vs 11.25) probably due to the model's small .5B parameters.
 
+## 2026-11-12 - Quantization results
+```
+quant  model_mem_gb  peak_gen_gb  peak_mmlu_gb  rouge1  rouge2  rougeL  mmlu  rouge_min  mmlu_min
+ none          1.02         1.14          1.50    47.1    21.3    37.7  41.7       21.9       1.2
+ 8bit          0.67         0.77          1.13    47.5    21.3    37.7  40.5       59.1       3.3
+ 4bit          0.49         0.60          0.96    46.2    20.0    36.6  40.4       30.5       1.8
+ ```
+ - Quantization reduced the memory foot print and the peak memory allocated ont he gpu.
+ - Scores stayed about the same.
+ - The cost of quantization was time: no quant 21.9 rouge_m (1.2 mmlu_min) vs 8bit 59.1 rouge_min (1.2 mmlu_mmin) and 4bit 30.5 rouge_min (1.8 mmlu_min).
