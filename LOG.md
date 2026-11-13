@@ -94,15 +94,15 @@ quant  model_mem_gb  peak_gen_gb  peak_mmlu_gb  rouge1  rouge2  rougeL  mmlu  ro
  8bit          0.67         0.77          1.13    47.5    21.3    37.7  40.5       59.1       3.3
  4bit          0.49         0.60          0.96    46.2    20.0    36.6  40.4       30.5       1.8
  ```
- - Quantization reduced the memory foot print and the peak memory allocated ont he gpu.
- - Scores stayed about the same.
- - The cost of quantization was time: no quant 21.9 rouge_m (1.2 mmlu_min) vs 8bit 59.1 rouge_min (3.3 mmlu_mmin) and 4bit 30.5 rouge_min (1.8 mmlu_min).
+- Quantization reduced the memory foot print and the peak memory allocated ont he gpu.
+- Scores stayed about the same.
+- The cost of quantization was time: no quant 21.9 rouge_m (1.2 mmlu_min) vs 8bit 59.1 rouge_min (3.3 mmlu_mmin) and 4bit 30.5 rouge_min (1.8 mmlu_min).
 
- ## 2026-11-12 - Rouge on test set setup
- - for each method, pick model with best Rouge1 on validation: 5-shot, LoRA r=64, QLoRA r=16, Full FT
- - LoRA r=16 was added because it score is near best Rouge1 and did not decrease in mmlu score.
+## 2026-11-12 - Rouge on test set setup
+- for each method, pick model with best Rouge1 on validation: 5-shot, LoRA r=64, QLoRA r=16, Full FT
+- LoRA r=16 was added because it score is near best Rouge1 and did not decrease in mmlu score.
 
- ## 2026-11-13 - Rouge on test set results
+## 2026-11-13 - Rouge on test set results
  ```
     method  rouge1  rouge2  rougeL  mmlu  trainable_params  train_min peak_mem_gb  eval_min* eval_loss
     5-shot    37.4    12.5    28.4  41.1              <NA>        NaN        None      17.2      None
@@ -111,9 +111,9 @@ quant  model_mem_gb  peak_gen_gb  peak_mmlu_gb  rouge1  rouge2  rougeL  mmlu  ro
 QLoRA r=16    45.4    19.0    36.4  39.4           8798208       26.4        10.9      21.8    1.3277
    Full FT    47.9    21.8    38.7  30.7         494032768       24.9       >14.5      10.9     1.312
  ```
- - \* `eval_min` measures the time to execute generate Rouge summaries on test set and evaluate Rouge scores.
- - `mmlu`,  `trainable_params`,  `train_min`, `peak_mem_gb`, `eval_loss` do not depend on test set
- - Rouge on test set shows order of models with best Rouge1 scores is consistent:
+- \* `eval_min` measures the time to execute generate Rouge summaries on test set and evaluate Rouge scores.
+- `mmlu`,  `trainable_params`,  `train_min`, `peak_mem_gb`, `eval_loss` do not depend on test set
+- Rouge on test set shows order of models with best Rouge1 scores is consistent:
  ```
      method  rouge1-test  rouge1-val
    Full FT    47.9        48.8
@@ -122,4 +122,4 @@ QLoRA r=16    45.4    19.0    36.4  39.4           8798208       26.4        10.
 QLoRA r=16    45.4        46.5
     5-shot    37.4        38.9
  ```
- - There is small differences between scores on test sets and validation set.
+- There is small differences between scores on test sets and validation set.
