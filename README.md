@@ -3,7 +3,7 @@
 ## Summary
 The **objective** of this mini-project was to fine-tune Qwen2.5-0.5B-Instruct to summarize dialogues from SAMSum while measuring forgetting and the cost. My **approach** was to first consider different methods: prompt engineering, LoRA, QLoRA, and full fine-tuning. ROUGE-1 was used to measure a model's ability to summarize and to measure a model's general forgetting Massive Multitask Language Understanding (MMLU) was used which measures a model's general knowledge.
 
-THe models were compared to Qwen2.5 ROUGE-1 points (with prompt engineering) and MMLU points. The highest gains in ROUGE-1 points came from the full fine tuned model at an increase of 10.5 points, but at a cost of the highest forgetting, a decrease of 10.4 MMLU points. LoRA rank=16 gained 9 ROUGE-1 points from the baseline, nearly reached the highest gains, while showing no signs of forgetting (gained 0.7 MMLU points).
+The models were compared with Qwen2.5 (with no additional training): with its best prompt engineering (5-shot ROUGE-1 points) and MMLU points. The highest gains in ROUGE-1 points came from the full fine tuned model at an increase of 10.5 points, but at a cost of the highest forgetting, a decrease of 10.4 MMLU points. LoRA rank=16 gained 9 ROUGE-1 points from the baseline, nearly reached the highest gains, while showing no signs of forgetting (gained 0.7 MMLU points).
 
 The models were trained on Kaggle's free tier (2x NVIDIA T4, 16 GB each).
 
@@ -12,7 +12,7 @@ Key findings:
 - Fine tuning beats prompting by 8 - 10.5 ROUGE-1 points on the test set.
 - More trainable parameters improves the ROUGE-1 score slightly, but increases forgetting (MMLU) more rapidly.
 - LoRA rank=16 had near best ROUGE-1 score and showed no sign of forgetting.
-- QLoRA rank=16 saved little memory, but did not outweight the increase in training time. ROUGE-1 results are 1 point less than LoRA rank=16.
+- QLoRA rank=16 saved little memory, but did not outweigh the increase in training time. ROUGE-1 results are 1 point less than LoRA rank=16.
 - ROUGE-1/2/L scores on validation set and test set produced similar scores. The order of ROUGE-1 scores on the models was preserved on both the validation set and test set.
 
 | Method     |   Rouge 1 |   Rouge 2 |   Rouge L |   MMLU | trainable parameters   |   train min | peak memory allocated on gpu (GB) |   eval min |   val loss |
@@ -35,7 +35,7 @@ In the next two figures, ROUGE-1 scores are computed on the validation set and i
 
 <img src="figures/rouge_val_vs_params.png" alt="ROUGE-1 vs trainable parameters" width="70%">
 
-The scatter plot illustrates that as the trainable parameters increases, the ROUGE-1 score increases at a very slow rate. Differences in ROUGE-1 are small.
+The scatter plot illustrates that as the number of trainable parameters increases, the ROUGE-1 score increases at a very slow rate. Differences in ROUGE-1 are small.
 
 
 <img src="figures/rouge_gain_val_vs_forgetting.png" alt="ROUGE-1 vs forgetting (MMLU)" width="70%">
@@ -44,7 +44,7 @@ The plot illustrates that generally the more the model specializes (increases RO
 ## Quantization
 Key Findings:
 - Quantization reduced model footprint by 52% for 4bit (34.3% for 8bit).
-- Quantization was slower by 1.5 times for 4bit (2.75 for 8bit) than without quantization.
+- Quantization made the MMLU scoring slower by 1.5 times for 4bit (2.75 for 8bit) than without quantization. ROUGE generation and scoring were also slower by similar ratios.
 - Changes in quality (ROUGE-1/2/L and MMLU points) were small.
 
 Quantization was applied to the best all around model, LoRA rank=16, on the validation set.
@@ -54,8 +54,9 @@ Quantization was applied to the best all around model, LoRA rank=16, on the vali
 | none    |           1.02 |          1.14 |           1.5  |     47.1 |     21.3 |     37.7 |   41.7 |        21.9 |        1.2 |
 | 8bit    |           0.67 |          0.77 |           1.13 |     47.5 |     21.3 |     37.7 |   40.5 |        59.1 |        3.3 |
 | 4bit    |           0.49 |          0.6  |           0.96 |     46.2 |     20   |     36.6 |   40.4 |        30.5 |        1.8 |
+
 Notes:
-- `peak_gen_gb` and `peak_mmlu_gb` record the peak memory allocated during the summarizing/ROUGE-1/2/L testing and MMLU testing, respectfully.
+- `peak_gen_gb` and `peak_mmlu_gb` record the peak memory allocated during the summarizing/ROUGE-1/2/L testing and MMLU testing, respectively.
 - `rouge_min` is the time needed to summarize the validation set and run the ROUGE-1/2/L tests.
 
 ## What went wrong
