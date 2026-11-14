@@ -1,16 +1,16 @@
 # Prompting, LoRA, QLoRA, or Full Fine-Tuning? Dialogue Summarization with Qwen2.5-0.5B
 
 ## Summary
-The **objective** of this mini-project was to fine-tune Qwen2.5-0.5B-Instruct to summarize dialogues from SAMSum while measuring forgetting and the cost. My **approach** was to first consider different methods: prompt engineering, LoRA, QLoRA, and full fine-tuning. ROUGE-1 was used to measure a model's ability to summarize. To measure a model's general forgetting Massive Multitask Language Understanding (MMLU) was used which measures a model's general knowledge.
+The **objective** of this mini-project was to fine-tune Qwen2.5-0.5B-Instruct to summarize dialogues from SAMSum while measuring forgetting and the cost. My **approach** was to first consider different methods: prompt engineering, LoRA, QLoRA, and full fine-tuning. ROUGE-1 was used to measure a model's ability to summarize. To measure a model's general forgetting, Massive Multitask Language Understanding (MMLU) was used which measures a model's general knowledge.
 
-The models were compared with the base model (the original Qwen2.5-0.5B-Instruct before fine-turning): with its best prompt engineering (5-shot ROUGE-1 points) and MMLU points. The highest gains in ROUGE-1 points came from the full fine tuned model at an increase of 10.5 points, but at a cost of the highest forgetting, a decrease of 10.4 MMLU points. LoRA rank=16 gained 9 ROUGE-1 points from the base model's score, nearly reached the highest gains, while showing no signs of forgetting (gained 0.7 MMLU points).
+The models were compared with the base model (the original Qwen2.5-0.5B-Instruct before fine-tuning): with its best prompt engineering (5-shot ROUGE-1 points) and MMLU points. The highest gains in ROUGE-1 points came from the full fine-tuned model at an increase of 10.5 points, but at a cost of the highest forgetting, a decrease of 10.4 MMLU points. LoRA rank=16 gained 9 ROUGE-1 points from the base model's score, nearly reached the highest gains, while showing no signs of forgetting (gained 0.7 MMLU points).
 
 The models were trained on Kaggle's free tier (2x NVIDIA T4, 16 GB each).
 
 ## Results
 Key findings:
 - Fine-tuning beats prompting by 8 - 10.5 ROUGE-1 points on the test set.
-- More trainable parameters improve the ROUGE-1 score slightly, but increases forgetting (MMLU) more rapidly.
+- More trainable parameters improve the ROUGE-1 score slightly, but increase forgetting (MMLU) more rapidly.
 - LoRA rank=16 had near best ROUGE-1 score and showed no sign of forgetting.
 - QLoRA rank=16 saved little memory, but that saving did not outweigh the increase in training time. ROUGE-1 results are 1 point less than LoRA rank=16.
 - ROUGE-1/2/L scores on validation set and test set produced similar scores. The order of ROUGE-1 scores on the models was preserved on both the validation set and test set.
