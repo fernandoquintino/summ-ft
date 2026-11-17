@@ -54,7 +54,7 @@
 LoRA r=16    47.2    21.3    37.6  41.8           8798208       17.9        11.25      19.9
 LoRA r=64    47.6    21.8    38.2  35.9          35192832       18.0        11.56      21.0
 ```
-- DataParallel on GPU 0: 14.8 GB (vs 11.3 GB with one GPU)
+- DataParallel on GPU 0: 14.8 GB (vs 11.3 GB with one GPU) short test.
 - DDP peaked at 11.25 GB on GPU 0 and trained in 18 min (vs about 33 min estimate for one GPU)
 
 ## 2026-11-07 - Full fine tuning
