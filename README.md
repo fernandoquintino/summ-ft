@@ -27,7 +27,7 @@ Notes:
 - ROUGE = test set (819 dialogues)
 - MMLU = 1,000 fixed questions
 - Full FT = checkpoint-900 (see Section What went wrong)
-- Metrics from training runs: train min, peak memory allocated, val loss
+- Metrics from training runs: train min, peak memory allocated (GPU 0), val loss
 - eval min measures the time to generate Rouge summaries from the test set and evaluate Rouge scores.
 
 ## Figures
