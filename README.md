@@ -62,7 +62,7 @@ Notes:
 ## What went wrong
 - Full fine-tuning ran out of memory at step 920/921. Checkpoint at step 900 was used. At step 900 the learning rate was about 3e-8, so any changes after that were small. The crash showed that training needed more than 14.5 GB of allocated memory. The T4's max capacity is 14.56 GiB (about 15.6 GB), about 0.9 GiB of it was reserved but unused (fragmented).
 - A batch size of 4 per GPU ran out of memory, so switched to batch size of 2 per GPU and doubled the gradient accumulation steps to keep the effective batch size at 16.
-- In a short test, DataParallel GPU 0 peaked at about 14.8 GB (vs 11.3 GB with on GPU), close to the T4's limit. I switched to DistributedDataParallel and the full LoRA r=16 runs peaked at 11.25 GB (GPU 0) and trained in about 18 min (vs about 33 min estimate for one GPU).
+- In a short test with DataParallel, GPU 0 peaked at about 14.8 GB (vs 11.3 GB with one GPU), close to the T4's limit. I switched to DistributedDataParallel and the full LoRA r=16 runs peaked at 11.25 GB (GPU 0) and trained in about 18 min (vs about 33 min estimate for one GPU).
 - Data set Samsung/samsum is no longer on Hugging Face, so ended up using knkarthick/samsum.
 
 ## Limitations
