@@ -60,13 +60,14 @@ Notes:
 - `rouge_min` is the time needed to summarize the validation set and run the ROUGE-1/2/L tests.
 
 ## What went wrong
-- Full fine-tuning ran out of memory at step 920/921. Checkpoint at step 900 was used. At step 900 the learning rate was about 3e-8, so any changes after that were small. The crashed showed that training needed greater than 14.5 GB (T4 limit) to continue.
+- Full fine-tuning ran out of memory at step 920/921. Checkpoint at step 900 was used. At step 900 the learning rate was about 3e-8, so any changes after that were small. The crash showed that training needed more than 14.5 GB of allocated memory. The T4's max capacity is 14.56 GiB (about 15.6 GB), about 0.9 GiB of it was fragmented.
 - A batch size of 4 per GPU ran out of memory, so switched to batch size of 2 per GPU and doubled the gradient accumulation steps to keep the effective batch size at 16.
-- The two GPUs started with DataParallel with peak allocated memory at about 14 GB (limit is 15 GB) on GPU 0. After switching to DistributedDataParallel, the peak allocated memory was 11.3 GB. Additionally, training time dropped from about 33 min (the progress bar's estimate) to about 18 mins on the LoRA runs.
+- The two GPUs started with DataParallel with peak allocated memory at about 14 GB (limit is 15.6 GB) on GPU 0. After switching to DistributedDataParallel, the peak allocated memory was 11.3 GB. Additionally, training time dropped from about 33 min (the progress bar's estimate) to about 18 mins on the LoRA runs.
 - Data set Samsun/samsum is no longer on Hugging Face, so ended up using knkarthick/samsum.
 
 
 
 ## Limitations
 ## Reproduce
+- add a line about uninstalling torchao
 ## Repository layout
