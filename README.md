@@ -106,7 +106,7 @@ pip install -e .
 ```
 `requirements.txt` installs `bitsandbytes` (used for QLoRA training and the quantization results) only on Linux. These runs were done on Kaggle's NVIDIA T4 GPUs.
 
-On Kaggle (GPU T4 X 2), uninstall torchao (the preinstalled version breaks peft):
+On Kaggle (GPU T4 x 2), uninstall torchao (the preinstalled version breaks peft):
 ```
 pip uninstall -y torchao
 ```
@@ -126,7 +126,10 @@ python -m summft.run_mmlu --model <model or adapter folder> --name <label>
 ```
 Add `--quant 8bit` or `--quant 4bit` for quantized evaluation.
 
-Note: `<label>` names the output folder (  `results/<label>_<shots>shot_<split>`). The notebook expects these labels: `base` (few-shot), `lora_r16`, `lora_r64`, `qlora_r16`
+Note: `--name` sets the output folder:
+`results/<name>_<shots>shot_<split>/` for ROUGE, `results/mmlu_<name>_1000questions/` for MMLU. The notebook (`explore.ipynb`) expects the following names and settings to generated the images/tables:
+ - ROUGE and MMLU:  `base` (no `--model`; few-shot via `--shots`), `lora_r4`, `lora_r16`, `lora_r64`, `qlora_r16`, `full`
+ - Quantization runs (on the validation split, the default): `lora_r16_none`, `lora_r16_8bit`, `lora_r16_4bit`
 
 Experiment log with all decisions and intermediate results: [LOG.md](LOG.md)
 
