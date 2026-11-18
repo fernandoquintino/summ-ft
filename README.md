@@ -7,6 +7,8 @@ The models were compared with the base model (the original Qwen2.5-0.5B-Instruct
 
 The models were trained on Kaggle's free tier (2x NVIDIA T4, 16 GB each).
 
+This mini-project extends the labs of the DeepLearning course Generative AI with Large Language Models to include a current decoder-only model.
+
 ## Results
 Key findings:
 - Fine-tuning beats prompting by 8 - 10.5 ROUGE-1 points on the test set.
@@ -50,6 +52,19 @@ The plot illustrates that generally the more the model specializes (increases RO
 - Lengths: The longest dialogue is 1,049 tokens. Every example was kept and max length set to 1,200 tokens. Each batch was padded only to its longest example (dynamic padding).
 
 ## Methods
+| | Few-shot | LoRA | QLoRA | Full FT |
+|-|-|-|-|-|
+| What trains | nothing | A, B adapters | A, B on a 4-bit base | all weights |
+| Key settings |0/1/3/5 shots|r = 4, 16, 64, $\alpha$ = 2r, all 7 linear layers|r = 16, NF4, double quantization|gradient checkpointing|
+| Learning rate |-|2e-4|2e-4|2e-5|
+
+Shared settings:
+- 1 epoch
+- effective batch 16 = 2 per GPU X 4 accumulations X 2 GPUs
+- cosine scheduler
+- 3% warmup
+- fp16 mixed precision
+- best checkpoint by validation loss
 
 ## Quantization
 Key Findings:
@@ -82,6 +97,34 @@ Notes:
 - Few-shot examples were drawn with one seed.
 - ROUGE measures word overlap, not faithfulness.
 - No confidence intervals on ROUGE.
+
 ## Reproduce
-- add a line about uninstalling torchao
+Install:
+```
+pip install -r requirements.txt
+pip install -e .
+```
+`requirements.txt` installs `bitsandbytes` (used for QLoRA training and the quantization results) only on Linux. These runs were done on Kaggle's NVIDIA T4 GPUs.
+
+On Kaggle GPU T4 X 2 uninstall (preinstalled version breaks peft):
+```
+pip uninstall -y torchao
+```
+
+Train on 2 GPUs:
+```
+torchrun --nproc_per_node 2 -m summft.train --method lora --rank 16
+torchrun --nproc_per_node 2 -m summft.train --method qlora --rank 16
+torchrun --nproc_per_node 2 -m summft.train --method full --grad-ckpt
+```
+
+Evaluate:
+```
+python -m summft.run_icl --model <model or adapter folder> --name <label> --split test
+python -m summft.run_mmlu --model <model or adapter folder> --name <label>
+```
+Add `--quant 8bit` or `--quant 4bit` for quantized evaluation.
+
+Experiment log with all decisions and intermediate results: [LOG.md](LOG.md)
+
 ## Repository layout
