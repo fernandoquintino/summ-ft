@@ -46,9 +46,9 @@ The plot illustrates that generally the more the model specializes (increases RO
 
 ## Setup
 - Model: `Qwen/Qwen2.5-0.5B-Instruct` 494,032,768 parameters.
-- Data: `Samsung/samsum` is no longer on Hugging Face Hub. Used `knkarthick/samsum`. Train set has 14,731 train samples, validation set has 818 samples, and test set has 819 samples.
+- Data: `Samsung/samsum` is no longer on Hugging Face Hub. Used `knkarthick/samsum`. Train set has 14,731 samples, validation set has 818 samples, and test set has 819 samples.
 - Prompting: Changed system prompt to "Summarize this dialogue in one or two sentences."
-- Loss masking: Only the summary and `<|im_end|>` count toward the loss. The prompt and the trailing `\n` are masked, so that model learns to stop at `<|im_end|>`.
+- Loss masking: Only the summary and `<|im_end|>` count toward the loss. The prompt and the trailing `\n` are masked, so that the model learns to stop at `<|im_end|>`.
 - Lengths: The longest dialogue is 1,049 tokens. Every example was kept and max length set to 1,200 tokens. Each batch was padded only to its longest example (dynamic padding).
 
 ## Methods
@@ -60,8 +60,8 @@ The plot illustrates that generally the more the model specializes (increases RO
 
 Shared settings:
 - 1 epoch
-- effective batch 16 = 2 per GPU X 4 accumulations X 2 GPUs
-- cosine scheduler
+- effective batch 16 = 2 per GPU x 4 gradient accumulation steps x 2 GPUs (DDP)
+- cosine learning-rate scheduler
 - 3% warmup
 - fp16 mixed precision
 - best checkpoint by validation loss
@@ -87,7 +87,7 @@ Notes:
 ## What went wrong
 - Full fine-tuning ran out of memory at step 920/921. Checkpoint at step 900 was used. At step 900 the learning rate was about 3e-8, so any changes after that were small. The crash showed that training needed more than 14.5 GB of allocated memory. The T4's total capacity is 14.56 GiB (about 15.6 GB), about 0.9 GiB of it was reserved but unused (fragmented).
 - A batch size of 4 per GPU ran out of memory, so switched to batch size of 2 per GPU and doubled the gradient accumulation steps to keep the effective batch size at 16.
-- In a short test with DataParallel, GPU 0 peaked at about 14.8 GB (vs 11.3 GB with one GPU), close to the T4's limit. I switched to DistributedDataParallel and the full LoRA r=16 runs peaked at 11.25 GB (GPU 0) and trained in about 18 min (vs about 33 min estimate for one GPU).
+- In a short test with DataParallel, GPU 0 peaked at about 14.8 GB (vs 11.3 GB with one GPU), close to the T4's limit. I switched to DistributedDataParallel and the full LoRA r=16 run peaked at 11.25 GB (GPU 0) and trained in about 18 min (vs about 33 min estimate for one GPU).
 
 ## Limitations
 - Single seed per run.
@@ -99,14 +99,14 @@ Notes:
 - No confidence intervals on ROUGE.
 
 ## Reproduce
-Install:
+Run all commands from the repository root:
 ```
 pip install -r requirements.txt
 pip install -e .
 ```
 `requirements.txt` installs `bitsandbytes` (used for QLoRA training and the quantization results) only on Linux. These runs were done on Kaggle's NVIDIA T4 GPUs.
 
-On Kaggle GPU T4 X 2 uninstall (preinstalled version breaks peft):
+On Kaggle (GPU T4 X 2), uninstall torchao (the preinstalled version breaks peft):
 ```
 pip uninstall -y torchao
 ```
@@ -120,10 +120,13 @@ torchrun --nproc_per_node 2 -m summft.train --method full --grad-ckpt
 
 Evaluate:
 ```
+python -m summft.run_icl --shots 5 --name base --split test
 python -m summft.run_icl --model <model or adapter folder> --name <label> --split test
 python -m summft.run_mmlu --model <model or adapter folder> --name <label>
 ```
 Add `--quant 8bit` or `--quant 4bit` for quantized evaluation.
+
+Note: `<label>` names the output folder (  `results/<label>_<shots>shot_<split>`). The notebook expects these labels: `base` (few-shot), `lora_r16`, `lora_r64`, `qlora_r16`
 
 Experiment log with all decisions and intermediate results: [LOG.md](LOG.md)
 
