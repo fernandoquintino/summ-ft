@@ -45,9 +45,9 @@ The plot illustrates that generally the more the model specializes (increases RO
 ## Setup
 - Model: `Qwen/Qwen2.5-0.5B-Instruct` 494,032,768 parameters.
 - Data: `Samsung/samsum` is no longer on Hugging Face Hub. Used `knkarthick/samsum`. Train set has 14,731 train samples, validation set has 818 samples, and test set has 819 samples.
-- Prompting: Changed system prompting to "Summarize this dialogue in one or two sentences."
+- Prompting: Changed system prompt to "Summarize this dialogue in one or two sentences."
 - Loss masking: Only the summary and `<|im_end|>` count toward the loss. The prompt and the trailing `\n` are masked, so that model learns to stop at `<|im_end|>`.
-- Lengths: The longest dialogue is 1,049 tokens. Every token was kept and max length set to 1,200 tokens. Each batch was padded only to its longest example (dynamic padding).
+- Lengths: The longest dialogue is 1,049 tokens. Every example was kept and max length set to 1,200 tokens. Each batch was padded only to its longest example (dynamic padding).
 
 ## Methods
 
@@ -76,7 +76,7 @@ Notes:
 
 ## Limitations
 - Single seed per run.
-- MMLU on a 1,000 question subset.
+- MMLU on a 1,000-question subset.
 - Trained for only 1 epoch.
 - QLoRA's memory saving was small in these tests probably due to the model's small size (0.5B parameters).
 - Few-shot examples were drawn with one seed.
