@@ -41,6 +41,16 @@ The scatter plot illustrates that as the number of trainable parameters increase
 <img src="figures/rouge_gain_val_vs_forgetting.png" alt="ROUGE-1 vs forgetting (MMLU)" width="70%">
 
 The plot illustrates that generally the more the model specializes (increases ROUGE-1 score), the more the model forgets its general knowledge (MMLU score decreases). The exceptions are LoRA rank=4 and LoRA rank=16 showing no measurable forgetting (LoRA rank=16 increased slightly).
+
+## Setup
+- Model: `Qwen/Qwen2.5-0.5B-Instruct` 494,032,768 parameters.
+- Data: `Samsung/samsum` is no longer on Hub. Used `knkarthick/samsum`. Train set has 14,731 train samples, validation set has 818 samples, and test set has 819 samples.
+- Prompting: Change system content to "Summarize this dialogue in one or two sentences."
+- Loss masking: Mask trailing `\n` at end of assistant summary so that model learns to stop at `<|im_end|>`.
+- Lengths: The longest dialogue is 1,049 tokens. Every token was kept and capped at 1,200 tokens. Each batch was padded only to its longest example (dynamic padding).
+
+# Methods
+
 ## Quantization
 Key Findings:
 - Quantization reduced model footprint by 52% for 4bit (34.3% for 8bit).
@@ -66,6 +76,13 @@ Notes:
 - Data set Samsung/samsum is no longer on Hugging Face, so ended up using knkarthick/samsum.
 
 ## Limitations
+- Single seed per run.
+- MMLU on a 1,000 question subset.
+- Trained on only 1 epoch.
+- QLoRA's memory saving was small in these tests probably due to the model's small size (0.5B parameters).
+- Few-shot examples were drawn with one seed.
+- ROUGE measures word overlap, not faithfulness.
+- No confidence intervals on ROUGE.
 ## Reproduce
 - add a line about uninstalling torchao
 ## Repository layout
