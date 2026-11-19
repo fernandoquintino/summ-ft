@@ -142,7 +142,7 @@ Experiment log with all decisions and intermediate results: [LOG.md](LOG.md)
 | `src/summft/train.py`| fine-tunes with LoRA, QLoRA, or full fine-tuning|
 | `src/summft/generate.py`| generates summaries |
 | `src/summft/metrics.py`| computes ROUGE-1/2/L |
-| `src/summft/mmlu.py`| model picks A/B/C/D from next-token for MMLU questions and scores|
+| `src/summft/mmlu.py`| model picks A/B/C/D from next-token prediction for MMLU questions and scores|
 | `src/summft/models.py`| loads the base model, a LoRA adapter, or a full checkpoint (optionally: 8-bit/4-bit quantization).|
 | `src/summft/run_icl.py`| generates summaries for a split and saves ROUGE scores|
 | `src/summft/run_mmlu.py`| runs the MMLU evaluation and saves score|
