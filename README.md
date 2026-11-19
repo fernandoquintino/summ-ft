@@ -7,7 +7,7 @@ The models were compared with the base model (the original Qwen2.5-0.5B-Instruct
 
 The models were trained on Kaggle's free tier (2x NVIDIA T4, 16 GB each).
 
-This mini-project extends the labs of the DeepLearning course Generative AI with Large Language Models to include a current decoder-only model.
+This mini-project extends the labs of the DeepLearning.Ai course Generative AI with Large Language Models to include a current decoder-only model.
 
 ## Results
 Key findings:
@@ -115,7 +115,8 @@ Train on 2 GPUs:
 ```
 torchrun --nproc_per_node 2 -m summft.train --method lora --rank 4
 torchrun --nproc_per_node 2 -m summft.train --method lora --rank 16
-torchrun --nproc_per_node 2 -m summft.train --method qlora --rank 64
+torchrun --nproc_per_node 2 -m summft.train --method lora --rank 64
+torchrun --nproc_per_node 2 -m summft.train --method qlora --rank 16
 torchrun --nproc_per_node 2 -m summft.train --method full --grad-ckpt
 ```
 
@@ -134,4 +135,18 @@ Note: `--name` sets the output folder:
 
 Experiment log with all decisions and intermediate results: [LOG.md](LOG.md)
 
-## Repository layout
+## Repository structure
+| File | Contents |
+|-|-|
+| `src/summft/data.py`| loads SAMSum, builds chat prompts (zero/few-shot), tokenizes, custom padding|
+| `src/summft/train.py`| fine-tunes with LoRA, QLoRA, or full fine-tuning|
+| `src/summft/generate.py`| generates summaries |
+| `src/summft/metrics.py`| computes ROUGE-1/2/L |
+| `src/summft/mmlu.py`| model picks A/B/C/D from MMLU questions and scores|
+| `src/summft/models.py`| loads the base model, a LoRA adapter, or a full checkpoint (optionally: 8-bit/4-bit quant).|
+| `src/summft/run_icl.py`| generates summaries for a split and saves ROUGE scores|
+| `src/summft/run_mmlu.py`| runs the MMLU evaluation and saves score|
+|`tests/`| Contains the pytests.|
+|`figures/`| Contains the plots.|
+|`LOG.md`| The Experiment log.|
+|`explore.ipynb`| Generates the tables and plots.|
