@@ -56,6 +56,8 @@ LoRA r=64    47.6    21.8    38.2  35.9          35192832       18.0        11.5
 ```
 - DataParallel on GPU 0: 14.8 GB (vs 11.3 GB with one GPU) short test.
 - DDP peaked at 11.25 GB on GPU 0 and trained in 18 min (vs about 33 min estimate for one GPU)
+- Batch size 4 per GPU ran out of memory on the longest batch. Fix: batch size set to 2 per GPU, gradient accumulation doubled (effective batch still 16)
+- Preinstalled torchao broke peft. Fix: `pip uninstall -y torchao`
 
 ## 2026-11-07 - Full fine tuning
 ```
@@ -124,4 +126,5 @@ QLoRA r=16    45.4    19.0    36.4  39.4           8798208       26.4        10.
 QLoRA r=16    45.4        46.5
     5-shot    37.4        38.9
 ```
+- All test runs: n = 819
 - There is small differences between scores on test sets and validation set.
